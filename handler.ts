@@ -29,7 +29,7 @@ export type SocketHandlerContext = { request: Request; response: Response };
  */
 export function createHandler(
   socketHandler: SocketHandler,
-  { idleTimeout }: Readonly<Partial<Options>>,
+  { idleTimeout }: Readonly<Partial<Options>> = {},
 ): (req: Request) => Promise<Response> {
   const responseOnError = new Response(null, {
     status: Status.InternalServerError,

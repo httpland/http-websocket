@@ -1,8 +1,18 @@
-import { safeSync, Status } from "./deps.ts";
+import { safeSync, Status, STATUS_TEXT } from "./deps.ts";
 import { validateRequest } from "./validate.ts";
 
 /** WebSocket handler options. */
-export type Options = Pick<Deno.UpgradeWebSocketOptions, "idleTimeout">;
+export type Options = Pick<Deno.UpgradeWebSocketOptions, "idleTimeout"> & {
+  /** Select sub-protocol.  */
+  protocol: (protocols: string[]) => string | undefined;
+
+  /** Whether to do as a debug mode.
+   * When this is `true`, if an error occurs in the server, the
+   * Include detailed error messages in the response.
+   * @remarks For production use, this feature is not recommended.
+   */
+  debug: boolean;
+};
 
 /** Socket handler. */
 export type SocketHandler = (
@@ -29,40 +39,69 @@ export type SocketHandlerContext = { request: Request; response: Response };
  */
 export function createHandler(
   socketHandler: SocketHandler,
-  { idleTimeout }: Readonly<Partial<Options>> = {},
+  { idleTimeout, protocol, debug }: Readonly<Partial<Options>> = {},
 ): (req: Request) => Promise<Response> {
-  const responseOnError = new Response(null, {
-    status: Status.InternalServerError,
-  });
-
   return async (req) => {
     const [result, error] = validateRequest(req);
     if (!result) {
-      const headers = error.status === Status.MethodNotAllowed
-        ? new Headers({ "Allow": "GET" })
-        : undefined;
-      return new Response(error.message, {
+      const body = debug ? error.message : STATUS_TEXT[error.status];
+      const headers = error.headers;
+      return new Response(body, {
         status: error.status,
         headers,
       });
     }
 
-    const protocol = req.headers.get("sec-websocket-protocol") ?? undefined;
-    const [data] = safeSync(() =>
-      Deno.upgradeWebSocket(req, { protocol, idleTimeout })
-    );
+    const secWebsocketProtocol = req.headers.get("sec-websocket-protocol");
+    const protocols = headerList(secWebsocketProtocol);
 
-    if (!data) return responseOnError;
+    const [data, e] = safeSync(() => {
+      const _protocol = protocol?.(protocols);
+
+      return Deno.upgradeWebSocket(req, { protocol: _protocol, idleTimeout });
+    });
+
+    if (!data) {
+      const body = debug
+        ? resolveErrorMsg(e)
+        : STATUS_TEXT[Status.InternalServerError];
+      const res = new Response(body, ERROR_RESPONSE_INIT);
+      return res;
+    }
     const { socket, response } = data;
 
     try {
       await socketHandler(socket, {
-        request: req,
-        response,
+        request: req.clone(),
+        response: response.clone(),
       });
       return response;
-    } catch {
-      return responseOnError;
+    } catch (error) {
+      const body = debug
+        ? resolveErrorMsg(error)
+        : STATUS_TEXT[Status.InternalServerError];
+      return new Response(body, ERROR_RESPONSE_INIT);
     }
   };
+}
+
+function trim(value: string): string {
+  return value.trim();
+}
+
+function resolveErrorMsg(
+  value: unknown,
+  fallbackMessage = "Unknown error has occurred",
+): string {
+  return value instanceof Error ? value.message : fallbackMessage;
+}
+
+const ERROR_RESPONSE_INIT: ResponseInit = {
+  status: Status.InternalServerError,
+};
+
+function headerList(header: string | null): string[] {
+  const headerList = header?.split(",") ?? [];
+
+  return headerList.map(trim);
 }

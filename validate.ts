@@ -8,7 +8,11 @@ export function validateRequest(req: Request): [valid: true] | [
   if (req.method !== "GET") {
     return [
       false,
-      createHttpError(Status.MethodNotAllowed, `Invalid HTTP Request method.`),
+      createHttpError(Status.MethodNotAllowed, `Invalid HTTP Request method.`, {
+        headers: {
+          Allow: "GET",
+        },
+      }),
     ];
   }
 

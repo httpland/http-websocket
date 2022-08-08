@@ -1,3 +1,10 @@
+# [1.0.0-beta.3](https://github.com/TomokiMiyauci/ws-handler/compare/1.0.0-beta.2...1.0.0-beta.3) (2022-08-08)
+
+
+### Features
+
+* **handler:** add status text to response ([ba82688](https://github.com/TomokiMiyauci/ws-handler/commit/ba826886082a3f31b9e64401a9eff62fbe609912))
+
 # [1.0.0-beta.2](https://github.com/TomokiMiyauci/ws-handler/compare/1.0.0-beta.1...1.0.0-beta.2) (2022-08-08)
 
 

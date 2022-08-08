@@ -1,3 +1,10 @@
+# [1.0.0-beta.2](https://github.com/TomokiMiyauci/ws-handler/compare/1.0.0-beta.1...1.0.0-beta.2) (2022-08-08)
+
+
+### Features
+
+* **header:** add `protocol` and `debug` field to interface ([a186cde](https://github.com/TomokiMiyauci/ws-handler/commit/a186cde7b4396ba8e80e46a46458e1744aea3b59))
+
 # 1.0.0-beta.1 (2022-08-04)
 
 

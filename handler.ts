@@ -44,10 +44,11 @@ export function createHandler(
   return async (req) => {
     const [result, error] = validateRequest(req);
     if (!result) {
-      const body = debug ? error.message : STATUS_TEXT[error.status];
+      const body = debug ? error.message : null;
       const headers = error.headers;
       return new Response(body, {
         status: error.status,
+        statusText: STATUS_TEXT[error.status],
         headers,
       });
     }
@@ -62,9 +63,7 @@ export function createHandler(
     });
 
     if (!data) {
-      const body = debug
-        ? resolveErrorMsg(e)
-        : STATUS_TEXT[Status.InternalServerError];
+      const body = debug ? resolveErrorMsg(e) : null;
       const res = new Response(body, ERROR_RESPONSE_INIT);
       return res;
     }
@@ -77,9 +76,7 @@ export function createHandler(
       });
       return response;
     } catch (error) {
-      const body = debug
-        ? resolveErrorMsg(error)
-        : STATUS_TEXT[Status.InternalServerError];
+      const body = debug ? resolveErrorMsg(error) : null;
       return new Response(body, ERROR_RESPONSE_INIT);
     }
   };
@@ -98,6 +95,7 @@ function resolveErrorMsg(
 
 const ERROR_RESPONSE_INIT: ResponseInit = {
   status: Status.InternalServerError,
+  statusText: STATUS_TEXT[Status.InternalServerError],
 };
 
 function headerList(header: string | null): string[] {

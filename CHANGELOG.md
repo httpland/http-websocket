@@ -1,3 +1,10 @@
+# [1.0.0-beta.4](https://github.com/httpland/http-websocket/compare/1.0.0-beta.3...1.0.0-beta.4) (2022-08-10)
+
+
+### Features
+
+* rename module name and add docs comment ([8b8b17b](https://github.com/httpland/http-websocket/commit/8b8b17b8f720110cb6063be4df5fe09b6a0d2ffb))
+
 # [1.0.0-beta.3](https://github.com/TomokiMiyauci/ws-handler/compare/1.0.0-beta.2...1.0.0-beta.3) (2022-08-08)
 
 

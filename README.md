@@ -1,5 +1,9 @@
 # http-websocket
 
+[![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno)](https://deno.land/x/http_websocket)
+[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/http_websocket/mod.ts)
+[![GitHub](https://img.shields.io/github/license/httpland/http-websocket)](https://github.com/httpland/http-websocket/blob/main/LICENSE)
+
 HTTP request for websocket with standard `Request` and `Response`.
 
 ## HTTP handler for websocket

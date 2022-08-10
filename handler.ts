@@ -28,13 +28,15 @@ export type SocketHandlerContext = { request: Request; response: Response };
  * import {
  *   createHandler,
  *   SocketHandler,
- * } from "https://deno.land/x/ws_handler@$VERSION/mod.ts";
+ * } from "https://deno.land/x/http_websocket@$VERSION/mod.ts";
+ * import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
  * const socketHandler: SocketHandler = (socket) => {
  *   socket.onopen = () => {
  *     socket.send("hello");
  *   };
  * };
  * const handler = createHandler(socketHandler);
+ * await serve(handler);
  * ```
  */
 export function createHandler(

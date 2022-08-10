@@ -1,27 +1,16 @@
-# websocket-handler
+# http-websocket
 
-WebSocket handler implementation and other utilities for working with status
-codes.
+HTTP request for websocket with standard `Request` and `Response`.
 
-## What
+## HTTP handler for websocket
 
-This is the WebSocket **handler** framework. It handles HTTP Request validation
-and error handling, which you must do when you create a WebSocket Server.
-
-You can concentrate only on WebSocket behavior.
-
-## Features
-
-- Validation for HTTP request what upgrade to WebSocket.
-- Tiny, minimum interface.
-
-## Quick View
+Create WebSocket request handler.
 
 ```ts
 import {
   createHandler,
   SocketHandler,
-} from "https://deno.land/x/ws_handler@$VERSION/mod.ts";
+} from "https://deno.land/x/http_websocket@$VERSION/mod.ts";
 import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
 const socketHandler: SocketHandler = (socket) => {
   socket.onopen = () => {
@@ -29,32 +18,59 @@ const socketHandler: SocketHandler = (socket) => {
   };
 };
 const handler = createHandler(socketHandler);
-serve(handler);
+await serve(handler);
 ```
 
-## API
+### Spec
 
-### createHandler
+The `Response` includes status code and headers as follow:
 
-Create WebSocket request handler.
+| Code  | Headers |
+| ----- | ------- |
+| `101` |         |
+| `400` |         |
+| `405` | `allow` |
+| `500` |         |
 
-#### Example
+## WebSocket Status Code and Status Text
+
+Helper for processing status code and status text.
 
 ```ts
 import {
-  createHandler,
-  SocketHandler,
-} from "https://deno.land/x/ws_handler@$VERSION/mod.ts";
-const socketHandler: SocketHandler = (socket) => {
-  socket.onopen = () => {
-    socket.send("hello");
-  };
-};
-const handler = createHandler(socketHandler);
+  Status,
+  STATUS_TEXT,
+} from "https://deno.land/x/http_websocket@$VERSION/mod.ts";
+import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts";
+
+assertEquals(Status.NormalClosure, 1000);
+assertEquals(STATUS_TEXT[Status.NormalClosure], "Normal Closure");
+```
+
+## Validate request
+
+HTTP request validation for websocket. The validation is based on RFC 6455, 4.1.
+
+The result of the validation is returned as a tuple. If there is an error, the
+second element is [`HttpError`](https://deno.land/std/http/mod.ts?s=HttpError).
+
+```ts
+import {
+  validateRequest,
+} from "https://deno.land/x/http_websocket@$VERSION/mod.ts";
+import {
+  assertEquals,
+  assertIsError,
+} from "https://deno.land/std@$VERSION/testing/asserts.ts";
+
+const req = new Request("http://localhost/");
+const result = validateRequest(req);
+assertEquals(result[0], false);
+assertIsError(result[1]);
 ```
 
 ## License
 
-Copyright © 2022-present [TomokiMiyauci](https://github.com/TomokiMiyauci).
+Copyright © 2022-present [httpland](https://github.com/httpland).
 
 Released under the [MIT](./LICENSE) license

@@ -3,7 +3,7 @@ export {
   HttpError,
   Status,
   STATUS_TEXT,
-} from "https://deno.land/std@0.150.0/http/mod.ts";
+} from "https://deno.land/std@0.151.0/http/mod.ts";
 export {
   isNull,
   isPlainObject,

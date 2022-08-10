@@ -1,6 +1,22 @@
 import { createHttpError, HttpError, isNull, Status } from "./deps.ts";
 
-/** Validate HTTP request is WebSocket request. */
+/** HTTP request validation for websocket.
+ * The validation is based on RFC 6455, 4.1.
+ * ```ts
+ * import {
+ *   validateRequest,
+ * } from "https://deno.land/x/http_websocket@$VERSION/mod.ts";
+ * import {
+ *   assertEquals,
+ *   assertIsError,
+ * } from "https://deno.land/std@$VERSION/testing/asserts.ts";
+ *
+ * const req = new Request("http://localhost/");
+ * const result = validateRequest(req);
+ * assertEquals(result[0], false);
+ * assertIsError(result[1]);
+ * ```
+ */
 export function validateRequest(req: Request): [valid: true] | [
   valid: false,
   error: HttpError,

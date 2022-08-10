@@ -17,7 +17,17 @@ export enum Status {
   TLSHandshake = 1015,
 }
 
-/** A record of all the status codes text. */
+/** A record of all the status codes text.
+ * ```ts
+ * import {
+ *   Status,
+ *   STATUS_TEXT,
+ * } from "https://deno.land/x/http_websocket@$VERSION/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts";
+ * assertEquals(Status.NormalClosure, 1000);
+ * assertEquals(STATUS_TEXT[Status.NormalClosure], "Normal Closure");
+ * ```
+ */
 export const STATUS_TEXT: Readonly<Record<Status, string>> = {
   [Status.NormalClosure]: "Normal Closure",
   [Status.GoingAway]: "Going Away",

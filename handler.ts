@@ -1,27 +1,42 @@
-import { safeSync, Status, STATUS_TEXT } from "./deps.ts";
+import { Handler, safeSync, Status, STATUS_TEXT, trim } from "./deps.ts";
 import { validateRequest } from "./validate.ts";
 
 /** WebSocket handler options. */
-export type Options = Pick<Deno.UpgradeWebSocketOptions, "idleTimeout"> & {
+export interface HandlerOptions {
   /** Select sub-protocol.  */
-  protocol: (protocols: string[]) => string | undefined;
+  readonly protocol?: (protocols: ReadonlyArray<string>) => string | undefined;
 
   /** Whether to do as a debug mode.
    * When this is `true`, if an error occurs in the server, the
    * Include detailed error messages in the response.
    * @remarks For production use, this feature is not recommended.
    */
-  debug: boolean;
-};
+  readonly debug?: boolean;
+
+  /**
+   * If the client does not respond to this frame with a
+   * `pong` within the timeout specified, the connection is deemed
+   * unhealthy and is closed. The `close` and `error` event will be emitted.
+   *
+   * The default is 120 seconds. Set to 0 to disable timeouts.
+   */
+  readonly idleTimeout?: number;
+}
 
 /** Socket handler. */
 export type SocketHandler = (
   socket: WebSocket,
-  ctx: Readonly<SocketHandlerContext>,
-) => void | Promise<void>;
+  ctx: SocketHandlerContext,
+) => Promise<void> | void;
 
 /** Socket handler context. */
-export type SocketHandlerContext = { request: Request; response: Response };
+export interface SocketHandlerContext {
+  /** HTTP `Request` Object */
+  readonly request: Request;
+
+  /** HTTP `Response` Object that upgrade to websocket. */
+  readonly response: Response;
+}
 
 /** Create WebSocket request handler.
  * ```ts
@@ -41,11 +56,11 @@ export type SocketHandlerContext = { request: Request; response: Response };
  */
 export function createHandler(
   socketHandler: SocketHandler,
-  { idleTimeout, protocol, debug }: Readonly<Partial<Options>> = {},
-): (req: Request) => Promise<Response> {
+  { idleTimeout, protocol: _protocol, debug }: HandlerOptions = {},
+): Handler {
   return async (req) => {
-    const [result, error] = validateRequest(req);
-    if (!result) {
+    const [valid, error] = validateRequest(req);
+    if (!valid) {
       const body = debug ? error.message : null;
       const headers = error.headers;
       return new Response(body, {
@@ -59,14 +74,14 @@ export function createHandler(
     const protocols = headerList(secWebsocketProtocol);
 
     const [data, e] = safeSync(() => {
-      const _protocol = protocol?.(protocols);
+      const protocol = _protocol?.(protocols);
 
-      return Deno.upgradeWebSocket(req, { protocol: _protocol, idleTimeout });
+      return Deno.upgradeWebSocket(req, { protocol, idleTimeout });
     });
 
     if (!data) {
       const body = debug ? resolveErrorMsg(e) : null;
-      const res = new Response(body, ERROR_RESPONSE_INIT);
+      const res = new Response(body, ErrorResponseInit);
       return res;
     }
     const { socket, response } = data;
@@ -79,13 +94,9 @@ export function createHandler(
       return response;
     } catch (error) {
       const body = debug ? resolveErrorMsg(error) : null;
-      return new Response(body, ERROR_RESPONSE_INIT);
+      return new Response(body, ErrorResponseInit);
     }
   };
-}
-
-function trim(value: string): string {
-  return value.trim();
 }
 
 function resolveErrorMsg(
@@ -95,7 +106,7 @@ function resolveErrorMsg(
   return value instanceof Error ? value.message : fallbackMessage;
 }
 
-const ERROR_RESPONSE_INIT: ResponseInit = {
+const ErrorResponseInit: ResponseInit = {
   status: Status.InternalServerError,
   statusText: STATUS_TEXT[Status.InternalServerError],
 };
@@ -103,5 +114,5 @@ const ERROR_RESPONSE_INIT: ResponseInit = {
 function headerList(header: string | null): string[] {
   const headerList = header?.split(",") ?? [];
 
-  return headerList.map(trim);
+  return headerList.map(trim).filter((value) => !!value);
 }

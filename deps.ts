@@ -8,6 +8,7 @@ export {
   isNull,
   isPlainObject,
 } from "https://deno.land/x/isx@1.0.0-beta.19/mod.ts";
+export { type Handler } from "https://deno.land/x/http_utils@1.0.0-beta.1/mod.ts";
 
 export function safeSync<R, E>(
   fn: () => R,
@@ -17,4 +18,8 @@ export function safeSync<R, E>(
   } catch (er) {
     return [, er];
   }
+}
+
+export function trim(value: string): string {
+  return value.trim();
 }

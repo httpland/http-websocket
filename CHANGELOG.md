@@ -1,3 +1,10 @@
+# [1.0.0-beta.5](https://github.com/httpland/http-websocket/compare/1.0.0-beta.4...1.0.0-beta.5) (2022-08-19)
+
+
+### Features
+
+* **handler:** improve types and docs comment ([546e3a4](https://github.com/httpland/http-websocket/commit/546e3a4d724cb4f43eac989a0c6be1d3f8486d9d))
+
 # [1.0.0-beta.4](https://github.com/httpland/http-websocket/compare/1.0.0-beta.3...1.0.0-beta.4) (2022-08-10)
 
 
